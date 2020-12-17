@@ -269,15 +269,17 @@ class SgivenC(nn.Module):
 
     def get_log_prob_single(self, s, mean_s, logvar_s):
         cov_s = torch.diag(logvar_s.exp())
-        m = MultivariateNormal(mean_s, cov_s)
+        m = MultivariateNormal(mean_s, covariance_matrix=cov_s)
 
         return m.log_prob(s)
 
     def get_log_prob_total(self, s, c):
+        # print("s_given_c WEIGHTS:", self.linear2.weight.data)
         mean_s, logvar_s = self.forward(c) # NxD
         batch_size = mean_s.size(0)
-        cov_s = torch.diag_embed(logvar_s.exp()) # NxDxD
-        m = MultivariateNormal(mean_s, cov_s)
+        cov_s = torch.diag_embed(logvar_s.exp() + 1e-6) # NxDxD
+        # cov_s[torch.arange(mean_s.size(1)), torch.arange(mean_s.size(1))] += 1e-6
+        m = MultivariateNormal(mean_s, covariance_matrix=cov_s)
 
         kernel = m.log_prob(s.unsqueeze(1))
 
@@ -303,12 +305,16 @@ class SgivenC(nn.Module):
 
         mean_s, logvar_s = self.forward(c) # NxD
         batch_size = mean_s.size(0)
-        cov_s = torch.diag_embed(logvar_s.exp()) # NxDxD
-        m = MultivariateNormal(mean_s, cov_s)
+        cov_s = torch.diag_embed(logvar_s.exp() + 1e-6) # NxDxD
+        # cov_s[torch.arange(mean_s.size(1)), torch.arange(mean_s.size(1))] += 1e-6
+        m = MultivariateNormal(mean_s, covariance_matrix=cov_s)
         kernel = m.log_prob(s.unsqueeze(1))
+        # print("MEAN, COV:", mean_s, cov_s)
+        # print("KERNEL:", kernel[0])
 
         rand_idx = torch.randint(batch_size, (batch_size,))
         mask_tensor = torch.zeros_like(kernel)
+        assert (mask_tensor.size()[0] == batch_size and mask_tensor.size()[1] == batch_size)
         mask_tensor[torch.arange(batch_size), rand_idx] = -1
         mask_tensor[torch.arange(batch_size), torch.arange(batch_size)] += 1
 
@@ -385,6 +391,8 @@ class LSTMDecoder(nn.Module):
         return output_logits.view(-1, batch_size_c, len(self.vocab))
 
     def decode(self, c, s, greedy=True):
+        assert False 
+
         n_sample_c, batch_size_c, nc = c.size()
         n_sample_s, batch_size_s, ns = s.size()
 

@@ -157,7 +157,7 @@ def add_args(parser):
                         help='directory name to save')
     parser.add_argument('--exp_name', type=str, default='',
                         help='experiment Name')
-    parser.add_argument('--bsz', type=int, default=128,
+    parser.add_argument('--bsz', type=int, default=256,
                         help='batch size for training')
     parser.add_argument('--text_only', default=False, action='store_true',
                         help='use text only without feats')

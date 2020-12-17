@@ -17,7 +17,7 @@ CONFIG["yelp"] = {
     "label": True,
     "params": {
         "log_interval": 1000,
-        "num_epochs": 50,
+        "num_epochs": 100,
         "warm_up": 10,
         "kl_start": 0.1,
         "beta1": 0.35,
